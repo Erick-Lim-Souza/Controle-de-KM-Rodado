@@ -104,7 +104,7 @@ Você pode acessar uma versão demo do sistema online através do seguinte link:
 
 ## 📄 Arquivos do Projeto
 
-- `index_melhorado.html`: O arquivo principal da aplicação web.
+- `index.html`: O arquivo principal da aplicação web.
 - `README_github.md`: Este arquivo de documentação.
 
 ## 🎉 Conclusão
