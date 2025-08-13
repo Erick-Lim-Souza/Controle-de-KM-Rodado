@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de KM Rodado</title>
+  
+  <!-- Bootstrap CSS 5.3.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- Scripts externos -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #059669;
+      --success-hover: #047857;
+      --danger-color: #dc2626;
+      --danger-hover: #b91c1c;
+      --warning-color: #d97706;
+      --warning-hover: #b45309;
+      --dark-bg: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    
+    .card-custom {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    
+    .card-custom:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-control {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 0.75rem;
+      transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+      color: var(--text-primary);
+    }
+    
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .form-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .btn-custom {
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.2s ease;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary-custom {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary-custom:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+    
+    .btn-success-custom {
+      background: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success-custom:hover {
+      background: var(--success-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+    }
+    
+    .btn-danger-custom {
+      background: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger-custom:hover {
+      background: var(--danger-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
+    
+    .btn-warning-custom {
+      background: var(--warning-color);
+      color: white;
+    }
+    
+    .btn-warning-custom:hover {
+      background: var(--warning-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+    }
+    
+    .btn-outline-custom {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+    
+    .btn-outline-custom:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    
+    .valor-km-section {
+      background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(5, 150, 105, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .valor-km-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--success-color);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    
+    .valor-km-input {
+      background: rgba(5, 150, 105, 0.1);
+      border: 1px solid rgba(5, 150, 105, 0.3);
+      color: var(--text-primary);
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      width: 150px;
+      margin: 0 auto;
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-dark-custom {
+      --bs-table-bg: transparent;
+      --bs-table-border-color: var(--border-color);
+      margin-bottom: 0;
+    }
+    
+    .table-dark-custom th {
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 2px solid var(--border-color);
+      padding: 1rem 0.75rem;
+      font-size: 0.875rem;
+    }
+    
+    .table-dark-custom td {
+      text-align: center;
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+      padding: 0.875rem 0.75rem;
+      vertical-align: middle;
+    }
+    
+    .table-dark-custom tbody tr:hover {
+      background: rgba(37, 99, 235, 0.05);
+    }
+    
+    .table-dark-custom tfoot {
+      background: linear-gradient(135deg, var(--success-color) 0%, var(--success-hover) 100%);
+    }
+    
+    .table-dark-custom tfoot td {
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      border: none;
+      padding: 1rem 0.75rem;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .btn-sm-custom {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      border-radius: 6px;
+    }
+    
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1050;
+    }
+    
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+    }
+    
+    .modal-header {
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .modal-title {
+      color: var(--text-primary);
+    }
+    
+    .btn-close {
+      filter: invert(1);
+    }
+    
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 1rem 0.5rem;
+      }
+      
+      .page-title {
+        font-size: 2rem;
+      }
+      
+      .btn-custom {
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      
+      .valor-km-input {
+        width: 120px;
+        font-size: 1.1rem;
+      }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="bi bi-speedometer2 me-3"></i>
+        Controle de KM Rodado
+      </h1>
+      <p class="page-subtitle">Sistema profissional para registro e controle de quilometragem</p>
+    </div>
+
+    <!-- Seção Valor por KM -->
+    <div class="valor-km-section">
+      <label class="valor-km-label">
+        <i class="bi bi-currency-dollar me-2"></i>
+        Valor por KM (R$)
+      </label>
+      <input type="number" id="valorPorKm" step="0.01" value="1.50" class="form-control valor-km-input">
+    </div>
+
+    <!-- Formulário de Registro -->
+    <div class="card-custom p-4 mb-4">
+      <h5 class="mb-4 text-center">
+        <i class="bi bi-plus-circle me-2"></i>
+        Novo Registro
+      </h5>
+      
+      <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-4">
+          <label for="data" class="form-label">
+            <i class="bi bi-calendar3 me-1"></i>
+            Data
+          </label>
+          <input type="date" id="data" class="form-control">
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <label for="hora" class="form-label">
+            <i class="bi bi-clock me-1"></i>
+            Hora
+          </label>
+          <input type="time" id="hora" class="form-control">
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <label for="condutor" class="form-label">
+            <i class="bi bi-person me-1"></i>
+            Condutor
+          </label>
+          <input type="text" id="condutor" class="form-control" placeholder="Nome do condutor">
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <label for="empresa" class="form-label">
+            <i class="bi bi-building me-1"></i>
+            Empresa
+          </label>
+          <input type="text" id="empresa" class="form-control" placeholder="Nome da empresa">
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <label for="kmInicial" class="form-label">
+            <i class="bi bi-geo-alt me-1"></i>
+            KM Inicial
+          </label>
+          <input type="number" id="kmInicial" class="form-control" placeholder="0">
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <label for="kmFinal" class="form-label">
+            <i class="bi bi-geo-alt-fill me-1"></i>
+            KM Final
+          </label>
+          <input type="number" id="kmFinal" class="form-control" placeholder="0">
+        </div>
+      </div>
+
+      <div class="text-center">
+        <button onclick="adicionarRegistro()" class="btn btn-custom btn-primary-custom">
+          <i class="bi bi-plus-lg"></i>
+          Adicionar Registro
+        </button>
+      </div>
+    </div>
+
+    <!-- Ações e Filtros -->
+    <div class="card-custom p-4 mb-4">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="filtroEmpresa" class="form-label">
+            <i class="bi bi-funnel me-1"></i>
+            Filtrar por Empresa
+          </label>
+          <input type="text" id="filtroEmpresa" oninput="filtrarPorEmpresa()" class="form-control" placeholder="Digite o nome da empresa">
+        </div>
+        <div class="col-md-6">
+          <label for="filtroMes" class="form-label">
+            <i class="bi bi-calendar-month me-1"></i>
+            Filtrar por Mês
+          </label>
+          <input type="month" id="filtroMes" onchange="filtrarPorMes()" class="form-control">
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-6 col-md-4 col-lg-2">
+          <button onclick="exportarJSON()" class="btn btn-custom btn-outline-custom w-100">
+            <i class="bi bi-filetype-json"></i>
+            JSON
+          </button>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <button onclick="exportarExcel()" class="btn btn-custom btn-success-custom w-100">
+            <i class="bi bi-file-earmark-excel"></i>
+            Excel
+          </button>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <button onclick="exportarPDF()" class="btn btn-custom btn-outline-custom w-100">
+            <i class="bi bi-file-earmark-pdf"></i>
+            PDF
+          </button>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <button onclick="exportarTXT()" class="btn btn-custom btn-outline-custom w-100">
+            <i class="bi bi-file-earmark-text"></i>
+            TXT
+          </button>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <input type="file" id="importarJSON" accept=".json" onchange="importarJSON()" class="form-control">
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <button onclick="limparTudo()" class="btn btn-custom btn-danger-custom w-100">
+            <i class="bi bi-trash"></i>
+            Limpar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Registros -->
+    <div class="table-container">
+      <div class="table-responsive">
+        <table class="table table-dark-custom" id="tabela">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Hora</th>
+              <th>Condutor</th>
+              <th>Empresa</th>
+              <th>KM Inicial</th>
+              <th>KM Final</th>
+              <th>KM Rodado</th>
+              <th>Valor (R$)</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaRegistros"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6"><strong>TOTAIS</strong></td>
+              <td id="totalKm"><strong>0</strong></td>
+              <td id="totalValor"><strong>R$ 0,00</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição -->
+  <div class="modal fade" id="modalEdicao" tabindex="-1" aria-labelledby="modalEdicaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEdicaoLabel">
+            <i class="bi bi-pencil-square me-2"></i>
+            Editar Registro
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="editData" class="form-label">
+                <i class="bi bi-calendar3 me-1"></i>
+                Data
+              </label>
+              <input type="date" id="editData" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editHora" class="form-label">
+                <i class="bi bi-clock me-1"></i>
+                Hora
+              </label>
+              <input type="time" id="editHora" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editCondutor" class="form-label">
+                <i class="bi bi-person me-1"></i>
+                Condutor
+              </label>
+              <input type="text" id="editCondutor" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editEmpresa" class="form-label">
+                <i class="bi bi-building me-1"></i>
+                Empresa
+              </label>
+              <input type="text" id="editEmpresa" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editKmInicial" class="form-label">
+                <i class="bi bi-geo-alt me-1"></i>
+                KM Inicial
+              </label>
+              <input type="number" id="editKmInicial" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editKmFinal" class="form-label">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                KM Final
+              </label>
+              <input type="number" id="editKmFinal" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-custom btn-outline-custom" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i>
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-custom btn-primary-custom" onclick="salvarEdicao()">
+            <i class="bi bi-check-lg"></i>
+            Salvar Alterações
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container para Toasts -->
+  <div class="toast-container"></div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    let registros = JSON.parse(localStorage.getItem("registrosKM")) || [];
+    let registroEditandoIndex = -1;
+
+    function salvarLocalStorage() {
+      localStorage.setItem("registrosKM", JSON.stringify(registros));
+    }
+
+    function mostrarToast(mensagem, tipo = 'success') {
+      const toastContainer = document.querySelector('.toast-container');
+      const toastId = 'toast-' + Date.now();
+      
+      const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-bg-${tipo} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="bi bi-${tipo === 'success' ? 'check-circle' : tipo === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+              ${mensagem}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      `;
+      
+      toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+      const toastElement = document.getElementById(toastId);
+      const toast = new bootstrap.Toast(toastElement);
+      toast.show();
+      
+      toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+      });
+    }
+
+    function adicionarRegistro() {
+      const valorPorKm = parseFloat(document.getElementById('valorPorKm').value);
+      const data = document.getElementById('data').value;
+      const hora = document.getElementById('hora').value;
+      const condutor = document.getElementById('condutor').value.trim();
+      const empresa = document.getElementById('empresa').value.trim();
+      const kmInicial = parseFloat(document.getElementById('kmInicial').value);
+      const kmFinal = parseFloat(document.getElementById('kmFinal').value);
+      
+      if (!data || !hora || !condutor || !empresa || isNaN(kmInicial) || isNaN(kmFinal)) {
+        mostrarToast("Por favor, preencha todos os campos corretamente.", 'danger');
+        return;
+      }
+      
+      if (kmFinal < kmInicial) {
+        mostrarToast("KM final deve ser maior que KM inicial.", 'danger');
+        return;
+      }
+      
+      const kmRodado = kmFinal - kmInicial;
+      const valor = kmRodado * valorPorKm;
+      
+      registros.push({ 
+        data, 
+        hora, 
+        condutor, 
+        empresa, 
+        kmInicial, 
+        kmFinal, 
+        kmRodado, 
+        valor 
+      });
+      
+      salvarLocalStorage();
+      renderizarTabela();
+      limparFormulario();
+      mostrarToast("Registro adicionado com sucesso!");
+    }
+
+    function limparFormulario() {
+      document.getElementById('condutor').value = "";
+      document.getElementById('empresa').value = "";
+      document.getElementById('kmInicial').value = "";
+      document.getElementById('kmFinal').value = "";
+    }
+
+    function editarRegistro(index) {
+      registroEditandoIndex = index;
+      const registro = registros[index];
+      
+      document.getElementById('editData').value = registro.data;
+      document.getElementById('editHora').value = registro.hora;
+      document.getElementById('editCondutor').value = registro.condutor;
+      document.getElementById('editEmpresa').value = registro.empresa;
+      document.getElementById('editKmInicial').value = registro.kmInicial;
+      document.getElementById('editKmFinal').value = registro.kmFinal;
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalEdicao'));
+      modal.show();
+    }
+
+    function salvarEdicao() {
+      if (registroEditandoIndex === -1) return;
+      
+      const valorPorKm = parseFloat(document.getElementById('valorPorKm').value);
+      const data = document.getElementById('editData').value;
+      const hora = document.getElementById('editHora').value;
+      const condutor = document.getElementById('editCondutor').value.trim();
+      const empresa = document.getElementById('editEmpresa').value.trim();
+      const kmInicial = parseFloat(document.getElementById('editKmInicial').value);
+      const kmFinal = parseFloat(document.getElementById('editKmFinal').value);
+      
+      if (!data || !hora || !condutor || !empresa || isNaN(kmInicial) || isNaN(kmFinal)) {
+        mostrarToast("Por favor, preencha todos os campos corretamente.", 'danger');
+        return;
+      }
+      
+      if (kmFinal < kmInicial) {
+        mostrarToast("KM final deve ser maior que KM inicial.", 'danger');
+        return;
+      }
+      
+      const kmRodado = kmFinal - kmInicial;
+      const valor = kmRodado * valorPorKm;
+      
+      registros[registroEditandoIndex] = {
+        data,
+        hora,
+        condutor,
+        empresa,
+        kmInicial,
+        kmFinal,
+        kmRodado,
+        valor
+      };
+      
+      salvarLocalStorage();
+      renderizarTabela();
+      
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modalEdicao'));
+      modal.hide();
+      
+      registroEditandoIndex = -1;
+      mostrarToast("Registro atualizado com sucesso!");
+    }
+
+    function removerRegistro(index) {
+      if (confirm("Tem certeza que deseja remover este registro?")) {
+        registros.splice(index, 1);
+        salvarLocalStorage();
+        renderizarTabela();
+        mostrarToast("Registro removido com sucesso!", 'warning');
+      }
+    }
+
+    function limparTudo() {
+      if (confirm("Tem certeza que deseja apagar todos os registros? Esta ação não pode ser desfeita.")) {
+        registros = [];
+        salvarLocalStorage();
+        renderizarTabela();
+        mostrarToast("Todos os registros foram removidos.", 'warning');
+      }
+    }
+
+    function filtrarPorEmpresa() {
+      renderizarTabela(document.getElementById("filtroEmpresa").value.toLowerCase());
+    }
+
+    function filtrarPorMes() {
+      renderizarTabela(null, document.getElementById("filtroMes").value);
+    }
+
+    function renderizarTabela(filtroEmpresa = "", filtroMes = "") {
+      const tabela = document.getElementById("tabelaRegistros");
+      tabela.innerHTML = "";
+      let totalKm = 0, totalValor = 0;
+      
+      registros.forEach((r, i) => {
+        if ((r.empresa.toLowerCase().includes(filtroEmpresa)) &&
+            (!filtroMes || r.data.startsWith(filtroMes))) {
+          const linha = document.createElement("tr");
+          linha.className = "fade-in";
+          linha.innerHTML = `
+            <td>${new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+            <td>${r.hora}</td>
+            <td>${r.condutor}</td>
+            <td>${r.empresa}</td>
+            <td>${r.kmInicial.toLocaleString('pt-BR')}</td>
+            <td>${r.kmFinal.toLocaleString('pt-BR')}</td>
+            <td><strong>${r.kmRodado.toLocaleString('pt-BR')}</strong></td>
+            <td><strong>R$ ${r.valor.toFixed(2).replace('.', ',')}</strong></td>
+            <td>
+              <div class="action-buttons">
+                <button onclick="editarRegistro(${i})" class="btn btn-custom btn-warning-custom btn-sm-custom" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button onclick="removerRegistro(${i})" class="btn btn-custom btn-danger-custom btn-sm-custom" title="Remover">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>`;
+          tabela.appendChild(linha);
+          totalKm += r.kmRodado;
+          totalValor += r.valor;
+        }
+      });
+      
+      document.getElementById("totalKm").innerHTML = `<strong>${totalKm.toLocaleString('pt-BR')}</strong>`;
+      document.getElementById("totalValor").innerHTML = `<strong>R$ ${totalValor.toFixed(2).replace('.', ',')}</strong>`;
+    }
+
+    function exportarJSON() {
+      const blob = new Blob([JSON.stringify(registros, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `registros_km_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      mostrarToast("Arquivo JSON exportado com sucesso!");
+    }
+
+    function importarJSON() {
+      const file = document.getElementById("importarJSON").files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const dadosImportados = JSON.parse(e.target.result);
+            if (Array.isArray(dadosImportados)) {
+              registros = dadosImportados;
+              salvarLocalStorage();
+              renderizarTabela();
+              mostrarToast("Dados importados com sucesso!");
+            } else {
+              mostrarToast("Formato de arquivo inválido.", 'danger');
+            }
+          } catch (err) {
+            mostrarToast("Erro ao ler o arquivo. Verifique se é um JSON válido.", 'danger');
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    function exportarExcel() {
+      const dadosExport = registros.map(r => ({
+        'Data': new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR'),
+        'Hora': r.hora,
+        'Condutor': r.condutor,
+        'Empresa': r.empresa,
+        'KM Inicial': r.kmInicial,
+        'KM Final': r.kmFinal,
+        'KM Rodado': r.kmRodado,
+        'Valor (R$)': r.valor.toFixed(2)
+      }));
+      
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(dadosExport);
+      XLSX.utils.book_append_sheet(wb, ws, "Registros KM");
+      XLSX.writeFile(wb, `registros_km_${new Date().toISOString().split('T')[0]}.xlsx`);
+      mostrarToast("Arquivo Excel exportado com sucesso!");
+    }
+
+    async function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(16);
+      doc.text("Relatório de KM Rodado", 10, 20);
+      doc.setFontSize(10);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 10, 30);
+      
+      let y = 45;
+      doc.setFontSize(8);
+      
+      registros.forEach(r => {
+        const linha = `${new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR')} | ${r.hora} | ${r.condutor} | ${r.empresa} | KM: ${r.kmRodado} | R$ ${r.valor.toFixed(2)}`;
+        doc.text(linha, 10, y);
+        y += 7;
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+      
+      doc.save(`relatorio_km_${new Date().toISOString().split('T')[0]}.pdf`);
+      mostrarToast("Arquivo PDF exportado com sucesso!");
+    }
+
+    function exportarTXT() {
+      let conteudo = "Data;Hora;Condutor;Empresa;KM Inicial;KM Final;KM Rodado;Valor (R$)\n";
+      registros.forEach(r => {
+        conteudo += `${new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR')};${r.hora};${r.condutor};${r.empresa};${r.kmInicial};${r.kmFinal};${r.kmRodado};${r.valor.toFixed(2)}\n`;
+      });
+      
+      const blob = new Blob([conteudo], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `registros_km_${new Date().toISOString().split('T')[0]}.txt`;
+      a.click();
+      mostrarToast("Arquivo TXT exportado com sucesso!");
+    }
+
+    // Inicializar aplicação
+    document.addEventListener('DOMContentLoaded', function() {
+      // Definir data atual como padrão
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('data').value = hoje;
+      
+      // Definir hora atual como padrão
+      const agora = new Date();
+      const horaAtual = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
+      document.getElementById('hora').value = horaAtual;
+      
+      // Renderizar tabela inicial
+      renderizarTabela();
+      
+      mostrarToast("Sistema carregado com sucesso!", 'info');
+    });
+
+    // Atalhos de teclado
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.key === 'Enter') {
+        adicionarRegistro();
+      }
+    });
+  </script>
+</body>
+</html>
+
