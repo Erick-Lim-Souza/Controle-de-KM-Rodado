@@ -115,5 +115,5 @@ Sinta-se à vontade para explorar o código, contribuir com melhorias ou adaptar
 
 --- 
 
-Desenvolvido com ❤️ por Manus AI.
+Desenvolvido com ❤️ por Erick de Lima Souza.
 
